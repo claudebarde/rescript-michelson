@@ -1,0 +1,24 @@
+{
+  "name": "rescript-michelson",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "rescript",
+    "clean": "rescript clean -with-deps",
+    "start": "rescript build -w",
+    "dev": "rescript && node lib/es6/src/Index.bs.js",
+    "watch": "nodemon --watch src --ext res --exec \"rescript && node lib/es6/src/Index.bs.js\""
+  },
+  "keywords": [
+    "rescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bs-platform": "^9.0.2",
+    "rescript": "^9.1.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
