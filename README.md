@@ -1,6 +1,6 @@
-# ReScript Project Template
+# ReScript Michelson
 
-The only official ReScript starter template.
+Run Michelson code using Rescript
 
 ## Installation
 
@@ -13,9 +13,10 @@ npm install
 - Build: `npm run build`
 - Clean: `npm run clean`
 - Build & watch: `npm run start`
+- Build, watch and run JS output code: `npm run watch`
 
 ## Run
 
 ```sh
-node src/Demo.bs.js
+node lib/es6/src/Index.bs.js
 ```
