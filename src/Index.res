@@ -9,10 +9,11 @@ let michelson_contract = "UNPAIR ; ADD ; NIL operation ; PAIR"
 
 // parses the Michelson code
 let parsed_code = Remich.parse_to_ast(michelson_contract)
+Js.log("\nParsed code:")
 Js.log(parsed_code)
 // creates the initial stack
 //let initial_stack_result = Remich.init_stack(~params_type=Int, ~storage_type=Int, ~initial_stack_value=["3", "4"])
-let initial_stack_result = Remich.init_stack((Int(3), Int(4)))
+let initial_stack_result = Remich.init_stack((Int(3), Int(5)))
 let initial_stack = 
     switch initial_stack_result {
         | Ok(v) => {
@@ -26,8 +27,14 @@ let initial_stack =
         }
     }
 // runs the Michelson code
-let result = Remich.run_code(~ast=parsed_code, ~stack=initial_stack)
+let (result, stack_snapshots) = Remich.run_code(~ast=parsed_code, ~stack=initial_stack)
 switch result {
-    | Ok(res) => Js.log2("Result -> OK:", res)
-    | Error(err) => Js.log2("Result -> Error:", err)
+    | Ok(res) => {
+        let (rescript_res, js_res) = res
+        Js.log("\nMichelson code successfully processed!")
+        Js.log2("ReScript result:", rescript_res)
+        Js.log2("JavaScript result:", js_res)
+        Js.log2("Stack snapshots:", stack_snapshots)
+    }
+    | Error(err) => Js.log2("\nResult -> Error:", err)
 }

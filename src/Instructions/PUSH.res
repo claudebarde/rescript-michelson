@@ -5,7 +5,7 @@ module PUSH: InstructionWithTwoParams = {
     let parameters = 2
     let has_branches = false
 
-    let check_stack = (~stack, ~options: option<Instruction.run_args>=?, ()) => {
+    let check_stack = (~stack as _, ~options as _: option<Instruction.run_args>=?, ()) => {
         (false, "test")
     }
 

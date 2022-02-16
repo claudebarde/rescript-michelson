@@ -12,7 +12,7 @@
   "keywords": [
     "rescript"
   ],
-  "author": "",
+  "author": "Claude Barde",
   "license": "MIT",
   "dependencies": {
     "bs-platform": "^9.0.2",

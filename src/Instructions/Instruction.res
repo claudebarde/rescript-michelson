@@ -3,6 +3,10 @@ open Stack
 type run_args = {
     el_pos: int
 }
+/*type run_args_one_param = {
+    el_pos: int,
+    param: array<string>
+}*/
 
 module type InstructionType = {
     let has_parameters: bool
@@ -20,6 +24,8 @@ module type InstructionType = {
 module type InstructionWithOneParam = {
     include InstructionType
 
+    // overrides 'run' function to pass the parameters of the instruction
+    let run: (~stack: stack, ~args: run_args, ~params: array<string>) => result<stack, string>
     // returns has_parameters and number of parameters
     let has_params: () => (bool, int)
     // gets instruction parameter

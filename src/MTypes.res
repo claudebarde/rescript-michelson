@@ -117,7 +117,84 @@ let m_type_to_string = (el: m_type): string =>
         | Big_map(_) => "big_map"
     }
 
-let rec m_value_to_type = (el: m_value): m_type => 
+/*
+    string = list{("string", list{"string"})}
+    list operation = list{("list", list{"operation"})}
+    list pair nat nat = list{("list", list{("pair", list{"nat, nat"})})}
+    or nat string = list{{base: "or", params: list{{base: nat}, {base: string}}}}
+*/
+type rec string_to_m_type_param = {
+    base: string,
+    params: list<string_to_m_type_param>
+}
+let rec string_to_m_type = (els: list<string_to_m_type_param>): result<m_type, string> =>
+    switch els {
+        | list{} => Error("No parameters passed to function 'string_to_m_type'")
+        | list{ head } =>
+            switch head.base {
+                | "address" => Ok(Address)
+                | "bool" => Ok(Bool)
+                | "bytes" => Ok(Bytes)
+                | "chain_id" => Ok(Chain_id)
+                | "int" => Ok(Int)
+                | "key" => Ok(Key)
+                | "key_hash" => Ok(Key_hash)
+                | "mutez" => Ok(Mutez)
+                | "nat" => Ok(Nat)
+                | "never" => Ok(Never)
+                | "signature" => Ok(Signature)
+                | "string" => Ok(String)
+                | "timestamp" => Ok(Timestamp)
+                | "unit" => Ok(Unit)
+                | "operation" => Ok(Operation)
+                | "list" => 
+                    switch string_to_m_type(head.params) {
+                        | Ok(val) => Ok(List(val))
+                        | Error(err) => Error(err)
+                    }
+                | "option" => {
+                    switch string_to_m_type(head.params) {
+                        | Ok(val) => Ok(Option(val))
+                        | Error(err) => Error(err)
+                    }
+                }
+                | "set" => {
+                    switch string_to_m_type(head.params) {
+                        | Ok(val) => Ok(Set(val))
+                        | Error(err) => Error(err)
+                    }
+                }
+                | "or" | "pair" | "map" | "big_map" => {
+                    switch head.params {
+                        | list{} => Error(`Missing parameters for '${head.base}' in function 'string_to_m_type'`)
+                        | list{_} => Error(`Missing second parameter for '${head.base}' in function 'string_to_m_type'`)
+                        | list{left, right} => 
+                            switch (string_to_m_type(list{left}), string_to_m_type(list{right})) {
+                                | (Ok(left_val), Ok(right_val)) => 
+                                    if head.base === "or" {
+                                        Ok(Or((left_val, right_val)))
+                                    } else if head.base === "pair" {
+                                        Ok(Pair((left_val, right_val)))
+                                    } else if head.base === "map" {
+                                        Ok(Map((left_val, right_val)))
+                                    } else if head.base === "big_map" {
+                                        Ok(Big_map((left_val, right_val)))
+                                    } else {
+                                        Error("Unexpected error in function 'string_to_m_type'")
+                                    }
+                                | (Ok(_), Error(err)) => Error(err)
+                                | (Error(err), Ok(_)) => Error(err)
+                                | (Error(err1), Error(err2)) => Error(`${err1} / ${err2}`)
+                            }
+                        | _ => Error("Unexpected number of parameters for '${head.base}' in function 'string_to_m_type'")
+                    }
+                }
+                | _ => Error(`Unrecognized type for string "${head.base}" in function 'string_to_m_type'`)
+            }
+        | _ => Error("test")
+    }
+
+let m_value_to_type = (el: m_value): m_type => 
     switch el {
         | Address(_) => Address
         | Bool(_) => Bool
@@ -139,6 +216,7 @@ let rec m_value_to_type = (el: m_value): m_type =>
         | Set({ el_type }) => Set(el_type)
         | Or({ el_type: (left, right) }) => Or((left, right))
         | Pair({ el_type: (left, right) }) => Pair((left, right))
+        // TODO
         | Map(_) => Map((String, String))
         | Big_map(_) => Big_map((String, String))
     }

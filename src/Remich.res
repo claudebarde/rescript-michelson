@@ -1,5 +1,6 @@
 open Instructions
 open MTypes
+open MTypes_js
 open Stack
 open ErrorMsg
 
@@ -155,44 +156,22 @@ module Remich = {
         found_instructions
     }
 
-    /*%%private(
-        // runs Michelson code from AST
-        let rec read_ast = (ast: ast): result<stack_element, string> => {
-            for i in 0 to Js.Array.length(ast) - 1 {
-                let ast_element = ast[i]
-                // if instruction has branches, branch is sent to the read_ast function
-                if Js.Array.length(ast_element.branches) > 0 {
-                    read_ast(ast_element.branches)
-                } else {
-                    let { instruction, params } = ast_element
-                    switch instruction {
-                        | ADD => 
-                        | NIL =>
-                        | PAIR =>
-                        | PUSH =>
-                        | UNPAIR =>
-                        | _ => Error("Unknown instruction ${Instruction.variant_to_string(instruction)}")
-                    }
-                }
-            }
-        }
-    )*/
-
     // runs a single instruction and updates the stack
     let run_instruction = (
-            stack: result<stack, string>, 
+            params: (result<stack, string>, array<stack>), 
             instruction: ast_element
-        ): result<stack, string> => {
+        ): (result<stack, string>, array<stack>) => {
+            let (stack, stack_snapshots) = params
             switch stack {
                 | Ok(s) => {
-                    switch instruction.instruction {
+                    let new_stack = switch instruction.instruction {
                         | ADD => {
                             open ADD
                             ADD.run(~stack=s, ~args={ el_pos: 0 })
                         }
                         | NIL => {
                             open NIL
-                            NIL.run(~stack=s, ~args={ el_pos: 0 })
+                            NIL.run(~stack=s, ~args={ el_pos: 0 }, ~params=instruction.params)
                         }
                         | PAIR => {
                             open PAIR
@@ -207,28 +186,64 @@ module Remich = {
                             UNPAIR.run(~stack=s, ~args={ el_pos: 0 })
                         }
                     }
+
+                    (new_stack,
+                    switch new_stack {
+                        | Ok(stack) => {
+                            let _ = stack_snapshots->Js.Array2.push(stack)
+                            stack_snapshots
+                        }
+                        | Error(_) => stack_snapshots
+                    })
                 }
-                | Error(err) => Error(err)
+                | Error(err) => (Error(err), stack_snapshots)
             }
         }
 
     // runs the provided Michelson code
-    let run_code = (~ast: ast, ~stack: stack): result<m_value, string> => {            
+    /*
+    @returns result<raw_stack, formatted_stack_for_JS, stack_snapshots>
+    */
+    let run_code = (~ast: ast, ~stack: stack): (result<(m_value, m_value_js), string>, array<stack_snapshots>) => {            
             // stack must have only 1 element
             if Js.Array.length(stack) !== 1 {
-                Error(Error_msg.unexpected_stack_depth(1, Js.Array.length(stack)))
+                (Error(Error_msg.unexpected_stack_depth(1, Js.Array.length(stack))), [])
             } else {
                 // element on the stack must be a pair
                 switch stack[0].value {
                     | Pair(_) => {
                         // runs the code from the AST
-                        let new_stack: result<stack, string> = ast->Js.Array2.reduce(run_instruction, Ok(stack))
+                        let (new_stack, stack_snapshots): (result<stack, string>, array<stack>) = 
+                            ast->Js.Array2.reduce(run_instruction, (Ok(stack), [stack]))
+                        // converts the snapshots
+                        let stack_snapshots = 
+                            stack_snapshots
+                            ->Js.Array2.map(arr => arr->Js.Array2.map(el => 
+                                { 
+                                    origin_instruction: el.origin_instruction,
+                                    el_type_js: {
+                                        switch m_type_to_js(el.el_type)->Js.Json.stringifyAny {
+                                            | Some(val) => val
+                                            | None => `Couldn't pretty print value in snapshot`
+                                        }
+                                    },
+                                    value_js: {
+                                        switch m_value_to_js(el.value)->Js.Json.stringifyAny {
+                                            | Some(val) => val
+                                            | None => `Couldn't pretty print value in snapshot`
+                                        }
+                                    }
+                                }))
+                        // returns
                         switch new_stack {
-                            | Ok(stack) => Ok(stack[0].value)
-                            | Error(err) => Error(err)
+                            | Ok(stack) => {
+                                let res = stack[0].value
+                                (Ok((res, m_value_to_js(res))), stack_snapshots)
+                            }
+                            | Error(err) => (Error(err), stack_snapshots)
                         }
                     }
-                    | _ => Error(Error_msg.wrong_type(~instr=?None, ~expected="pair", ~received=m_type_to_string(stack[0].el_type)))
+                    | _ => (Error(Error_msg.wrong_type(~instr=?None, ~expected="pair", ~received=m_type_to_string(stack[0].el_type))), [])
                 } 
             }
         }

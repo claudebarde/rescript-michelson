@@ -1,6 +1,6 @@
 module Error_msg = {
     let stack_not_deep_enough = 
-        (instr, depth) => `The provided stack is not deep enough for instruction ${instr}, got ${Belt.Int.toString(depth)}`
+        (instr, depth) => `The provided stack is not deep enough for instruction ${instr}, got depth of ${Belt.Int.toString(depth)}`
     let unexpected_stack_depth =
         (expected, received) => j`Unexpected stack depth, expected $expected, got $received`
     let wrong_type =

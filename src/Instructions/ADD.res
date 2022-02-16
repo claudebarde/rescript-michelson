@@ -35,7 +35,7 @@ module ADD: InstructionType = {
         let (is_valid_stack, err) = check_stack(~stack=stack, ~options=?None, ())
         if(is_valid_stack){
             let first_el = stack[args.el_pos]
-            let second_el = stack[args.el_pos +1 ]
+            let second_el = stack[args.el_pos + 1 ]
             let add_result = 
                 switch (first_el.value, second_el.value) {
                     | (Int(val1), Int(val2)) => Ok(Int(val1 + val2))

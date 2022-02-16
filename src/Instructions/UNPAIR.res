@@ -12,7 +12,7 @@ module UNPAIR: InstructionType = {
 
     let check_stack = (
             ~stack, 
-            ~options: option<Instruction.run_args>=?, 
+            ~options as _: option<Instruction.run_args>=?, 
             ()
         ): (bool, string) => {
             // checks if the stack is deep enough
