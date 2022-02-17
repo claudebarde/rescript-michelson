@@ -4,10 +4,10 @@ open ErrorMsg
 open MTypes
 
 /*
-    https://tezos.gitlab.io/michelson-reference/#instr-ADD
+    https://tezos.gitlab.io/michelson-reference/#instr-SUB
 */
 
-module ADD: InstructionType = {
+module SUB: InstructionType = {
     let has_parameters = false
     let parameters = 0
     let has_branches = false
@@ -19,7 +19,7 @@ module ADD: InstructionType = {
         ): (bool, string) => {
             // checks if the stack is deep enough (must be at least 2 elements to add)
             if Js.Array.length(stack) < 2 {
-                (false, Error_msg.stack_not_deep_enough("ADD", Js.Array.length(stack)))
+                (false, Error_msg.stack_not_deep_enough("SUB", Js.Array.length(stack)))
             } else {
                 let el_pos = switch options {
                     | None => 0
@@ -30,7 +30,7 @@ module ADD: InstructionType = {
                 let second_el = stack[el_pos +1 ]
                 switch (first_el.el_type, second_el.el_type) {
                     | (Int | Nat | Mutez | Timestamp, Int | Nat | Mutez | Timestamp) => (true, "")
-                    | _ => (false, Error_msg.non_numeric_type("ADD", `(${m_type_to_string(first_el.el_type)} | ${m_type_to_string(second_el.el_type)})`))
+                    | _ => (false, Error_msg.non_numeric_type("SUB", `(${m_type_to_string(first_el.el_type)} | ${m_type_to_string(second_el.el_type)})`))
                 }                
             }
         }
@@ -40,21 +40,20 @@ module ADD: InstructionType = {
         if(is_valid_stack){
             let first_el = stack[args.el_pos]
             let second_el = stack[args.el_pos + 1 ]
-            let add_result = 
+            let sub_result = 
                 switch (first_el.value, second_el.value) {
-                    | (Int(val1), Int(val2)) => Ok(Int(val1 + val2))
-                    | (Nat(val1), Nat(val2)) => Ok(Nat(val1 + val2))
-                    | (Int(val1), Nat(val2)) => Ok(Int(val1 + val2))
-                    | (Nat(val1), Int(val2)) => Ok(Int(val1 + val2))
-                    | (Mutez(val1), Mutez(val2)) => Ok(Mutez(val1 + val2))
-                    | (Timestamp(val1), Int(val2)) => Ok(Timestamp(val1 + val2))
-                    | (Int(val1), Timestamp(val2)) => Ok(Timestamp(val1 + val2))
-                    | _ => Error("Invalid data type for ADD instruction")
+                    | (
+                            Int(val1)|Nat(val1), 
+                            Int(val2)|Nat(val2)
+                        ) => Ok(Int(val1 - val2))
+                    | (Mutez(val1), Mutez(val2)) => Ok(Mutez(val1 - val2))
+                    | (Timestamp(val1), Int(val2)) => Ok(Timestamp(val1 - val2))
+                    | _ => Error("Invalid data type for SUB instruction")
                 }
-            switch add_result {
+            switch sub_result {
                 | Ok(res) => {
                     // creates a new stack element
-                    let new_el = Stack.create_new_el(~el_value=res, ~from_instr="ADD")
+                    let new_el = Stack.create_new_el(~el_value=res, ~from_instr="SUB")
                     switch new_el {
                         | Ok(el) => {
                             // removes the previous 2 elements from the stack

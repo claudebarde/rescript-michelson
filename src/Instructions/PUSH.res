@@ -1,5 +1,9 @@
 open Instruction
 
+/*
+    https://tezos.gitlab.io/michelson-reference/#instr-PUSH
+*/
+
 module PUSH: InstructionWithTwoParams = {
     let has_parameters = true
     let parameters = 2

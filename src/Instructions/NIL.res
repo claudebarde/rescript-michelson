@@ -2,6 +2,10 @@ open Instruction
 open MTypes
 open Stack
 
+/*
+    https://tezos.gitlab.io/michelson-reference/#instr-NIL
+*/
+
 module NIL: InstructionWithOneParam = {
     let has_parameters = true
     let parameters = 1

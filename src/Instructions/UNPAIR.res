@@ -3,6 +3,10 @@ open Stack
 open ErrorMsg
 open MTypes
 
+/*
+    https://tezos.gitlab.io/michelson-reference/#instr-UNPAIR
+*/
+
 module UNPAIR: InstructionType = {
     let has_parameters = false
     let parameters = 0
@@ -24,7 +28,7 @@ module UNPAIR: InstructionType = {
         }
 
     let run = (~stack, ~args): result<stack, string> => {
-        let (is_stack_valid, invalid_stack_msg) = check_stack(~stack=stack, ~options=?Some(args), ())
+        let (is_stack_valid, invalid_stack_msg) = check_stack(~stack, ~options=?Some(args), ())
         if is_stack_valid {
             // unwraps the pair on top of the stack
             let el_to_unpair: stack_element = stack[args.el_pos]

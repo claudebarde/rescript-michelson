@@ -42,35 +42,35 @@ module type InstructionWithTwoParams = {
 }
 
 type instruction =
+    | ABS
     | ADD
     | NIL
     | PAIR
     | PUSH
+    | SUB
     | UNPAIR
 
 let string_to_variant: (string) => result<instruction, string> = 
-    instr => {
-        if instr === "ADD" {
-            Ok(ADD)
-        } else if instr === "NIL" {
-            Ok(NIL)
-        } else if instr === "PAIR" {
-            Ok(PAIR)
-        } else if instr === "PUSH" {
-            Ok(PUSH)
-        } else if instr === "UNPAIR" {
-            Ok(UNPAIR)
-        } else {
-            Error(`Unknow instruction: ${instr}`)
+    instr =>
+        switch instr {
+            | "ABS" => Ok(ABS)
+            | "ADD" => Ok(ADD)
+            | "NIL" => Ok(NIL)
+            | "PAIR" => Ok(PAIR)
+            | "PUSH" => Ok(PUSH)
+            | "SUB" => Ok(SUB)
+            | "UNPAIR" => Ok(UNPAIR)
+            | _ => Error(`Unknow instruction: ${instr}`)
         }
-    }
 
 let variant_to_string: (instruction) => result<string, string> =
     instruction => 
         switch instruction {
+            | ABS => Ok("ABS")
             | ADD => Ok("ADD")
             | NIL => Ok("NIL")
             | PAIR => Ok("PAIR")
             | PUSH => Ok("PUSH")
+            | SUB => Ok("SUB")
             | UNPAIR => Ok("UNPAIR")
         }

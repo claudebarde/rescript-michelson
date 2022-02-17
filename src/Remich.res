@@ -63,6 +63,15 @@ module Remich = {
                         switch instr {
                             | Ok(val) => {
                                 switch val {
+                                    | ABS => {
+                                        let ast_el: ast_element = {
+                                            instruction: ABS,
+                                            branches: [],
+                                            params: []
+                                        }
+                                        let _ = Js.Array.push(ast_el, found_instructions)
+                                        Ok()
+                                    }
                                     | ADD => {
                                         let ast_el: ast_element = {
                                             instruction: ADD,
@@ -120,6 +129,15 @@ module Remich = {
                                         let _ = Js.Array.push(ast_el, found_instructions)
                                         Ok()
                                     }
+                                    | SUB => {
+                                        let ast_el: ast_element = {
+                                            instruction: SUB,
+                                            branches: [],
+                                            params: []
+                                        }
+                                        let _ = Js.Array.push(ast_el, found_instructions)
+                                        Ok()
+                                    }
                                     | UNPAIR => {
                                         let ast_el: ast_element = {
                                             instruction: UNPAIR,
@@ -159,12 +177,18 @@ module Remich = {
     // runs a single instruction and updates the stack
     let run_instruction = (
             params: (result<stack, string>, array<stack>), 
-            instruction: ast_element
+            instruction: ast_element,
+            index: int
         ): (result<stack, string>, array<stack>) => {
+            let _ = index
             let (stack, stack_snapshots) = params
             switch stack {
                 | Ok(s) => {
                     let new_stack = switch instruction.instruction {
+                        | ABS => {
+                            open ABS
+                            ABS.run(~stack=s, ~args={ el_pos: 0 })
+                        }
                         | ADD => {
                             open ADD
                             ADD.run(~stack=s, ~args={ el_pos: 0 })
@@ -181,20 +205,28 @@ module Remich = {
                             open PUSH
                             PUSH.run(~stack=s, ~args={ el_pos: 0 })
                         }
+                        | SUB => {
+                            open SUB
+                            SUB.run(~stack=s, ~args={ el_pos: 0 })
+                        }
                         | UNPAIR => {
                             open UNPAIR
                             UNPAIR.run(~stack=s, ~args={ el_pos: 0 })
                         }
                     }
 
-                    (new_stack,
                     switch new_stack {
-                        | Ok(stack) => {
-                            let _ = stack_snapshots->Js.Array2.push(stack)
-                            stack_snapshots
+                        | Ok(_) => {
+                            // TODO: debug snapshots
+                            /*let new_snapshots = [stack]->Js.Array2.concat(stack_snapshots)
+                            Js.log(j`\n$index`)
+                            Js.log2("Stack:", stack)
+                            Js.log2("Snapshots:", new_snapshots)
+                            (new_stack, new_snapshots)*/
+                            (new_stack, [])
                         }
-                        | Error(_) => stack_snapshots
-                    })
+                        | Error(err) => (Error(err), stack_snapshots)
+                    }
                 }
                 | Error(err) => (Error(err), stack_snapshots)
             }
@@ -204,7 +236,8 @@ module Remich = {
     /*
     @returns result<raw_stack, formatted_stack_for_JS, stack_snapshots>
     */
-    let run_code = (~ast: ast, ~stack: stack): (result<(m_value, m_value_js), string>, array<stack_snapshots>) => {            
+    let run_code = (~ast: ast, ~stack: stack, ~storage_type: m_type): 
+        (result<(m_value, m_value_js), string>, array<stack_snapshots>) => { 
             // stack must have only 1 element
             if Js.Array.length(stack) !== 1 {
                 (Error(Error_msg.unexpected_stack_depth(1, Js.Array.length(stack))), [])
@@ -214,7 +247,7 @@ module Remich = {
                     | Pair(_) => {
                         // runs the code from the AST
                         let (new_stack, stack_snapshots): (result<stack, string>, array<stack>) = 
-                            ast->Js.Array2.reduce(run_instruction, (Ok(stack), [stack]))
+                            ast->Js.Array2.reducei(run_instruction, (Ok(stack), [stack]))
                         // converts the snapshots
                         let stack_snapshots = 
                             stack_snapshots
@@ -238,7 +271,26 @@ module Remich = {
                         switch new_stack {
                             | Ok(stack) => {
                                 let res = stack[0].value
-                                (Ok((res, m_value_to_js(res))), stack_snapshots)
+                                // element on the stack must be a pair
+                                // with a list of operation on the left
+                                // and the new storage on the right
+                                switch res {
+                                    | Pair({ el_type }) => {
+                                        switch el_type {
+                                            | (List(Operation), storage) => 
+                                                    if storage === storage_type {
+                                                        (Ok((res, m_value_to_js(res))), stack_snapshots)
+                                                    } else {
+                                                        (Error("Storage type in result doesn't match"), stack_snapshots)
+                                                    }
+                                            | _ => (Error("Unexpected final values"), stack_snapshots)
+                                        }                                        
+                                    }
+                                    | _ => (
+                                                Error(`Final value must be a pair, got ${m_type_to_string(stack[0].el_type)}`), 
+                                                stack_snapshots
+                                            )
+                                }
                             }
                             | Error(err) => (Error(err), stack_snapshots)
                         }
