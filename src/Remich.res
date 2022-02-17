@@ -33,7 +33,7 @@ module Remich = {
         }
     }
     // Parses given Michelson code into AST
-    let parse_to_ast = (code: string): ast => {
+    let parse_to_ast = (code: string): result<ast, string> => {
         let formatted_code = 
             code
             ->Js.String2.replaceByRe(%re("/\\n/g"), " ")
@@ -42,13 +42,13 @@ module Remich = {
 
         let current_instruction = ref("")
         let found_instructions: ast = []
+        let output_error: ref<option<string>> = ref(None)
 
         let cursor_position = ref(0)
         let break_parsing = ref(false)
         while cursor_position.contents < Js.Array.length(formatted_code) && !break_parsing.contents {
             let index = cursor_position.contents
             let char = formatted_code[index]
-        //Js.Array.forEachi((char, index) => {
             if char == " " || char == ";" {
                 // spaces and semi-colons are ignored
                 // TODO: analyze the content of 'current_instruction'
@@ -80,6 +80,51 @@ module Remich = {
                                         }
                                         let _ = Js.Array.push(ast_el, found_instructions)
                                         Ok()
+                                    }
+                                    | DROP => {
+                                        // finds if an element position is mentionned
+                                        let drop_pos_output =
+                                            formatted_code
+                                            ->Js.Array2.sliceFrom(index + 1)
+                                            ->Js.Array2.joinWith("")
+                                            ->Js.String2.trim
+                                            ->Js.String2.splitByReAtMost(%re("/;|\}/"), ~limit=1)
+
+                                        let result: result<string, string> =
+                                            if drop_pos_output->Js.Array2.length === 1 {
+                                                switch drop_pos_output[0] {
+                                                    | None => Ok("1")
+                                                    | Some(val) => {
+                                                        let val = val->Js.String2.trim
+                                                        if val->Js.String2.length === 0 {
+                                                            // empty string, means no parameter provided to DROP
+                                                            Ok("1")
+                                                        } else {
+                                                            // checks if an invalid parameter is not passed to DROP
+                                                            switch val->Belt.Int.fromString {
+                                                                | None => Error(j`Unexpected element position value ("$val") after DROP at index $index`)
+                                                                | Some(num) => num->Belt.Int.toString->Ok
+                                                            }
+                                                        }                                                        
+                                                    }
+                                                }                                                
+                                            } else {
+                                                // no element position is provided in the Michelson code
+                                                Ok("1")
+                                            }
+
+                                        switch result {
+                                            | Ok(val) => {
+                                                let ast_el: ast_element = {
+                                                    instruction: DROP,
+                                                    branches: [],
+                                                    params: [val]
+                                                }
+                                                let _ = Js.Array.push(ast_el, found_instructions)
+                                                Ok()
+                                            }
+                                            | Error(err) => Error(err)
+                                        }
                                     }
                                     | NIL => {
                                         // finds the associated type
@@ -160,18 +205,20 @@ module Remich = {
                                 cursor_position := cursor_position.contents + 1
                             }
                             | Error(err) => {
-                                Js.log(err)
                                 break_parsing := true
+                                output_error := Some(err)
                             }
                         }
                 } else {
                     cursor_position := cursor_position.contents + 1
                 }
             }
-        //}, formatted_code)
         }
 
-        found_instructions
+        switch output_error.contents {
+            | None => found_instructions->Ok
+            | Some(err) => err->Error
+        }
     }
 
     // runs a single instruction and updates the stack
@@ -192,6 +239,22 @@ module Remich = {
                         | ADD => {
                             open ADD
                             ADD.run(~stack=s, ~args={ el_pos: 0 })
+                        }
+                        | DROP => {
+                            open DROP
+                            // checks provided parameter before converting to el_pos
+                            switch instruction.params[0]->Belt.Int.fromString {
+                                | None => Error(`Invalid argument for DROP, expected a number, got ${instruction.params[0]}`)
+                                | Some(pos) => {
+                                    // pos cannot be 0
+                                    if pos === 0 {
+                                        Error(`Argument for DROP instruction cannot be '0'`)
+                                    } else {
+                                        DROP.run(~stack=s, ~args={ el_pos: pos }, ~params=instruction.params)
+                                    }
+                                }
+                            }
+
                         }
                         | NIL => {
                             open NIL
@@ -281,7 +344,7 @@ module Remich = {
                                                     if storage === storage_type {
                                                         (Ok((res, m_value_to_js(res))), stack_snapshots)
                                                     } else {
-                                                        (Error("Storage type in result doesn't match"), stack_snapshots)
+                                                        (Error(`Storage type in result doesn't match, expected ${storage_type->m_type_to_string, got ${storage->m_type_to_string}`), stack_snapshots)
                                                     }
                                             | _ => (Error("Unexpected final values"), stack_snapshots)
                                         }                                        

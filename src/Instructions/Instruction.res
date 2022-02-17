@@ -44,6 +44,7 @@ module type InstructionWithTwoParams = {
 type instruction =
     | ABS
     | ADD
+    | DROP
     | NIL
     | PAIR
     | PUSH
@@ -55,6 +56,7 @@ let string_to_variant: (string) => result<instruction, string> =
         switch instr {
             | "ABS" => Ok(ABS)
             | "ADD" => Ok(ADD)
+            | "DROP" => Ok(DROP)
             | "NIL" => Ok(NIL)
             | "PAIR" => Ok(PAIR)
             | "PUSH" => Ok(PUSH)
@@ -68,6 +70,7 @@ let variant_to_string: (instruction) => result<string, string> =
         switch instruction {
             | ABS => Ok("ABS")
             | ADD => Ok("ADD")
+            | DROP => Ok("DROP")
             | NIL => Ok("NIL")
             | PAIR => Ok("PAIR")
             | PUSH => Ok("PUSH")

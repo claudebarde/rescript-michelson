@@ -45,7 +45,7 @@ module ABS: InstructionType = {
             // creates a new element for the new value
             switch stack[args.el_pos].value {
                 | Int(val) => {
-                    switch Stack.create_new_el(~el_value=val->Js.Math.abs_int->Int, ~from_instr="ABS") {
+                    switch Stack.create_new_el(~el_value=val->Js.Math.abs_int->Nat, ~from_instr="ABS") {
                         | Ok(el) => {
                             // inserts the new element at el_pos
                             stack[args.el_pos] = el

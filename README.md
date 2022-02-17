@@ -23,7 +23,7 @@ node lib/es6/src/Index.bs.js
 
 ## Available instructions
 
-`ABS`, `ADD`, `NIL`, `PAIR`, `PUSH`, `SUB`, `UNPAIR`
+`ABS`, `ADD`, `DROP`, `NIL`, `PAIR`, `PUSH`, `SUB`, `UNPAIR`
 
 ## Type system
 
