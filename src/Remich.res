@@ -56,11 +56,19 @@ module Remich = {
                                 | None => Error(`Expected an object as first element of "${instruction}" arguments`)
                                 | Some(arg_obj) => 
                                     switch arg_obj->Js.Dict.get("int") {
-                                        | None => Error(`Expected an object with an "int" property as argument of "${instruction}"`)
-                                        | Some(int) =>
-                                            switch int->Js.Json.decodeNumber {
-                                                | None => Error(`Expected a numeric value under the "int" value as argument of "${instruction}"`)
-                                                | Some(int) => Ok(Some(int->Belt.Float.toInt))
+                                        | None =>
+                                            switch arg_obj->Js.Json.stringifyAny {
+                                                | None => Error(`Expected an object with an "int" property as argument of "${instruction}"`)
+                                                | Some(res) => Error(`Expected an object with an "int" property as argument of "${instruction}" but got ${res}`)
+                                            }                                             
+                                        | Some(int_as_string) =>
+                                            switch int_as_string->Js.Json.decodeString {
+                                                | None => Error(`Expected a string as the value of the "int" property for "${instruction}"`)
+                                                | Some(int) =>
+                                                    switch int->Belt.Int.fromString {
+                                                        | None => Error(`Expected a numeric value under the "int" value as argument of "${instruction}"`)
+                                                        | Some(int) => Ok(Some(int))
+                                                    }
                                             }
                                     }
                             }
@@ -171,24 +179,6 @@ module Remich = {
                                                                 }
                                                         }
                                                     }
-                                                    | DUP => {
-                                                        open DUP
-                                                        // finds if DUP has arguments
-                                                        switch find_numeric_arg(instr_obj, "DUP") {
-                                                            | Ok(res) => {
-                                                                let params = switch res {
-                                                                    | None => ["1"]
-                                                                    | Some(num) => [num->Belt.Int.toString]
-                                                                }                                                                    
-                                                                // runs the instruction
-                                                                switch DUP.run(~stack=stack, ~args={ el_pos: 0 }, ~params) {
-                                                                    | Ok(new_stack) => Ok((new_stack, 0))
-                                                                    | Error(err) => Error(err)
-                                                                }
-                                                            }
-                                                            | Error(err) => Error(err)
-                                                        }
-                                                    }
                                                     | DROP => {
                                                         open DROP
                                                         // finds if DROP has arguments
@@ -204,6 +194,24 @@ module Remich = {
                                                                     ~args={ el_pos: pos }, 
                                                                     ~params=[pos->Belt.Int.toString]
                                                                     ) {
+                                                                    | Ok(new_stack) => Ok((new_stack, 0))
+                                                                    | Error(err) => Error(err)
+                                                                }
+                                                            }
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
+                                                    | DUP => {
+                                                        open DUP
+                                                        // finds if DUP has arguments
+                                                        switch find_numeric_arg(instr_obj, "DUP") {
+                                                            | Ok(res) => {
+                                                                let params = switch res {
+                                                                    | None => ["1"]
+                                                                    | Some(num) => [num->Belt.Int.toString]
+                                                                }                                                                    
+                                                                // runs the instruction
+                                                                switch DUP.run(~stack=stack, ~args={ el_pos: 0 }, ~params) {
                                                                     | Ok(new_stack) => Ok((new_stack, 0))
                                                                     | Error(err) => Error(err)
                                                                 }

@@ -7,12 +7,13 @@
     "clean": "rescript clean -with-deps",
     "start": "rescript build -w",
     "dev": "rescript && node lib/es6/src/Index.bs.js",
-    "watch": "nodemon --watch src --ext res --exec \"rescript && node lib/es6/src/Index.bs.js\""
+    "watch": "nodemon --watch src --ext res --exec \"rescript && node lib/es6/src/Index.bs.js\"",
+    "test": "retest tests/*.mjs"
   },
   "keywords": [
     "rescript"
   ],
-  "author": "Claude Barde",
+  "author": "Claude Barde <cldbrd84@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "@taquito/michel-codec": "^11.2.0",
@@ -20,6 +21,7 @@
     "rescript": "^9.1.4"
   },
   "devDependencies": {
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.15",
+    "rescript-test": "^3.2.0"
   }
 }
