@@ -105,13 +105,60 @@ type michelson_test = {
         expected_new_storage: Nat(5)
     }
 */
-let michelson_test = {
-        contract: "CDR ; NIL operation ; PAIR",
-        initial_storage: Nat(5),
-        parameter: Nat(3),
-        storage_type: Nat,
-        expected_new_storage: Nat(5)
+/*
+    CONCAT tests
+
+    let michelson_test = {
+        contract: "UNPAIR ; CONCAT ; NIL operation ; PAIR",
+        initial_storage: String(" world"),
+        parameter: String("Hello"),
+        storage_type: String,
+        expected_new_storage: String("Hello world")
     }
+
+    let michelson_test = {
+        contract: "UNPAIR ; CONCAT ; NIL operation ; PAIR",
+        initial_storage: List({ el_type: String, value: list{String(" a"), String(" test")}}),
+        parameter: List({ el_type: String, value: list{String("this"), String(" is")}}),
+        storage_type: List(String),
+        expected_new_storage: List({ el_type: String, value: list{String("this"), String(" is"), String(" a"), String(" test")}})
+    }
+
+    let michelson_test = {
+        contract: "UNPAIR ; CONCAT ; NIL operation ; PAIR",
+        initial_storage: String(" world"),
+        parameter: Int(8),
+        storage_type: String,
+        expected_new_storage: String("Hello world")
+    }
+
+    let michelson_test = {
+        contract: "UNPAIR ; CONCAT ; NIL operation ; PAIR",
+        initial_storage: List({ el_type: String, value: list{String(" a"), String(" test")}}),
+        parameter: List({ el_type: String, value: list{Int(6), Int(7)}}),
+        storage_type: List(String),
+        expected_new_storage: List({ el_type: String, value: list{String("this"), String(" is"), String(" a"), String(" test")}})
+    }
+*/
+/*
+    SWAP tests
+
+    let michelson_test = {
+        contract: "UNPAIR ; CONCAT ; NIL operation ; PAIR",
+        initial_storage: String(" world"),
+        parameter: String("Hello"),
+        storage_type: String,
+        expected_new_storage: String("Hello world")
+    }
+*/
+let michelson_test = {
+        contract: `UNPAIR ; DROP ; PUSH string " world" ; SWAP ; CONCAT ; NIL operation ; PAIR`,
+        initial_storage: String("Hello"),
+        parameter: Unit,
+        storage_type: String,
+        expected_new_storage: String("Hello world")
+    }
+
 
 // creates the initial stack
 switch Remich.init_stack((michelson_test.parameter, michelson_test.initial_storage)) {

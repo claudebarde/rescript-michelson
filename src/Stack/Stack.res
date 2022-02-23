@@ -133,11 +133,16 @@ module Stack = {
                     value: Operation(val)
                 })
             | List({ value, el_type }) =>
-                Ok({
-                    origin_instruction: from_instr,
-                    el_type: List(String),
-                    value: List({ value, el_type })
-                })
+                // checks if the provided type matches the provided value
+                switch MList.check_list_values(value, el_type) {
+                    | Ok(_) => 
+                        Ok({
+                            origin_instruction: from_instr,
+                            el_type: List(el_type),
+                            value: List({ value, el_type })
+                        })
+                    | Error(_) => Error(`Elements of the list are not of the expected type "${m_type_to_string(el_type)}"`)
+                }                
             | Option({ value, el_type }) =>
                 Ok({
                     origin_instruction: from_instr,

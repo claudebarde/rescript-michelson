@@ -49,7 +49,7 @@ module PAIR: InstructionType = {
                         | Error(err) => Error(err)
                     }
                 }
-                | _ => Error("Js.Array2.removeCountInPlace returned more than 2 items")
+                | _ => Error("Js.Array2.removeCountInPlace returned more than 2 items for PAIR instruction")
             }            
         } else {
             Error(err)

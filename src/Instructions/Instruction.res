@@ -47,6 +47,7 @@ type instruction =
     | ADD
     | CAR
     | CDR
+    | CONCAT
     | DIP
     | DROP
     | DUP
@@ -54,6 +55,7 @@ type instruction =
     | PAIR
     | PUSH
     | SUB
+    | SWAP
     | UNPAIR
 
 let string_to_variant: (string) => result<instruction, string> = 
@@ -63,6 +65,7 @@ let string_to_variant: (string) => result<instruction, string> =
             | "ADD" => Ok(ADD)
             | "CAR" => Ok(CAR)
             | "CDR" => Ok(CDR)
+            | "CONCAT" => Ok(CONCAT)
             | "DIP" => Ok(DIP)
             | "DROP" => Ok(DROP)
             | "DUP" => Ok(DUP)
@@ -70,6 +73,7 @@ let string_to_variant: (string) => result<instruction, string> =
             | "PAIR" => Ok(PAIR)
             | "PUSH" => Ok(PUSH)
             | "SUB" => Ok(SUB)
+            | "SWAP" => Ok(SWAP)
             | "UNPAIR" => Ok(UNPAIR)
             | _ => Error(`Unknow instruction: ${instr}`)
         }
@@ -81,6 +85,7 @@ let variant_to_string: (instruction) => result<string, string> =
             | ADD => Ok("ADD")
             | CAR => Ok("CAR")
             | CDR => Ok("CDR")
+            | CONCAT => Ok("CONCAT")
             | DIP => Ok("DIP")
             | DROP => Ok("DROP")
             | DUP => Ok("DUP")
@@ -88,5 +93,6 @@ let variant_to_string: (instruction) => result<string, string> =
             | PAIR => Ok("PAIR")
             | PUSH => Ok("PUSH")
             | SUB => Ok("SUB")
+            | SWAP => Ok("SWAP")
             | UNPAIR => Ok("UNPAIR")
         }

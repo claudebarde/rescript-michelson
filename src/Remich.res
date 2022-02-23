@@ -157,6 +157,14 @@ module Remich = {
                                                             | Error(err) => Error(err)
                                                         }
                                                     }
+                                                    | CONCAT => {
+                                                        open CONCAT
+                                                        // runs the instruction
+                                                        switch CONCAT.run(~stack=stack, ~args={ el_pos: 0 }) {
+                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
                                                     | DIP => {
                                                         // DIP has more Michelson code in the "args" property
                                                         switch instr_obj->Js.Dict.get("args") {
@@ -244,6 +252,7 @@ module Remich = {
                                                     }
                                                     | PUSH => {
                                                         open PUSH
+                                                        // finds the parameters
                                                         // runs the instruction
                                                         switch PUSH.run(~stack=stack, ~args={ el_pos: 0 }) {
                                                             | Ok(new_stack) => Ok((new_stack, 0))
@@ -254,6 +263,14 @@ module Remich = {
                                                         open SUB
                                                         // runs the instruction
                                                         switch SUB.run(~stack=stack, ~args={ el_pos: 0 }) {
+                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
+                                                    | SWAP => {
+                                                        open SWAP
+                                                        // runs the instruction
+                                                        switch SWAP.run(~stack=stack, ~args={ el_pos: 0 }) {
                                                             | Ok(new_stack) => Ok((new_stack, 0))
                                                             | Error(err) => Error(err)
                                                         }

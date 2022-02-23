@@ -221,7 +221,114 @@ let m_value_to_type = (el: m_value): m_type =>
         | Big_map(_) => Big_map((String, String))
     }
 
-module Pair = {
+let rec parse_json_to_type = (json_obj: Js.Json.t): result<m_type, string> => {
+    // the value must be an object
+    switch json_obj->Js.Json.decodeObject {
+        | None => Error("The provided value is not a valid object")
+        | Some(obj) => {
+            // the value must have a "prim" property
+            switch obj->Js.Dict.get("prim") {
+                | None => Error(`The provided value doesn't have a "prim" property`)
+                | Some(prim) => {
+                    switch prim->Js.Json.decodeString {
+                        | None => Error(`The value of the "prim" property is expected to be a string`)
+                        | Some(prim_val) => {
+                            switch prim_val {
+                                | "address" => Ok(Address)
+                                | "bool" => Ok(Bool)
+                                | "bytes" => Ok(Bytes)
+                                | "chain_id" => Ok(Chain_id)
+                                | "int" => Ok(Int)
+                                | "key" => Ok(Key)
+                                | "key_hash" => Ok(Key_hash)
+                                | "mutez" => Ok(Mutez)
+                                | "nat" => Ok(Nat)
+                                | "never" => Ok(Never)
+                                | "signature" => Ok(Signature)
+                                | "string" => Ok(String)
+                                | "timestamp" => Ok(Timestamp)
+                                | "unit" => Ok(Unit)
+                                | "operation" => Ok(Operation)
+                                | "list" | "option" | "set" => {
+                                    // gets the value in "args"
+                                    switch obj->Js.Dict.get("args") {
+                                        | None => Error(`Missing "args" property for "${prim_val}" type`)
+                                        | Some(args) => {
+                                            // args must be an array
+                                            switch args->Js.Json.decodeArray {
+                                                | None => Error(`"args" property for "${prim_val}" type must be an array`)
+                                                | Some(args_arr) => {
+                                                    // there must be 1 object in the array
+                                                    if args_arr->Js.Array2.length !== 1 {
+                                                        Error(`"args" array for "${prim_val}" type must have exactly 1 element`)
+                                                    } else {
+                                                        // decodes the value in the array
+                                                        switch args_arr[0]->parse_json_to_type {
+                                                            | Ok(prim_type) => 
+                                                                if prim_val === "option" {
+                                                                    Ok(Option(prim_type))
+                                                                } else if prim_val === "list" {
+                                                                    Ok(List(prim_type))
+                                                                } else if prim_val === "set" {
+                                                                    Ok(Set(prim_type))
+                                                                } else {
+                                                                    Error(`It should be "option", "list" or "set" but it's not!`)
+                                                                }
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                | "or" | "pair" => {
+                                    // gets the value in "args"
+                                    switch obj->Js.Dict.get("args") {
+                                        | None => Error(`Missing "args" property for "${prim_val}" type`)
+                                        | Some(args) => {
+                                            // args must be an array
+                                            switch args->Js.Json.decodeArray {
+                                                | None => Error(`"args" property for "${prim_val}" type must be an array`)
+                                                | Some(args_arr) => {
+                                                    // there must be 2 objects in the array
+                                                    if args_arr->Js.Array2.length !== 2 {
+                                                        Error(`"args" array for "${prim_val}" type must have exactly 2 elements`)
+                                                    } else {
+                                                        // decodes the values in the array
+                                                        switch (args_arr[0]->parse_json_to_type, args_arr[1]->parse_json_to_type) {
+                                                            | (Ok(left_type), Ok(right_type)) => {
+                                                                if prim_val === "pair" {
+                                                                    Ok(Pair((left_type, right_type)))
+                                                                } else if prim_val === "or" {
+                                                                    Ok(Or((left_type, right_type)))
+                                                                } else {
+                                                                    Error(`It should be "pair" or "or" but it's not!`)
+                                                                }
+                                                            }
+                                                            | (Error(err), Ok(_)) => Error(err)
+                                                            | (Ok(_), Error(err)) => Error(err)
+                                                            | (Error(err1), Error(err2)) => Error(j`$err1 & $err2`)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                | "map" => Ok(Unit)
+                                | "big_map" => Ok(Unit)
+                                | _ => Error(`Unrecognized type for string "${prim_val}"`)
+                            }
+                        }
+                    }                    
+                }
+            }
+        }
+    }
+}
+
+module MPair = {
     // useful methods for pairs
     
     // unwraps values in a pair
@@ -229,6 +336,24 @@ module Pair = {
         switch el {
             | Pair({ value: (left_el, right_el) }) => Ok((left_el, right_el))
             | _ => Error("Element to unpair must be a pair")
+        }
+    }
+}
+
+module MList = {
+    // useful methods for list
+
+    // checks that all the values in a list are all the same m_type
+    let rec check_list_values = (list: m_list<'a>, expected_type: m_type): result<(), ()> => {
+        switch list {
+            | list{} => Ok()
+            | list{_} => Ok()
+            | list{hd, ...tl} => 
+                if m_value_to_type(hd) != expected_type {
+                    Error()
+                } else {
+                    check_list_values(tl, expected_type)
+                }
         }
     }
 }
