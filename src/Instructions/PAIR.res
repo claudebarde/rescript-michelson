@@ -11,10 +11,11 @@ module PAIR: InstructionType = {
     let has_parameters = false
     let parameters = 0
     let has_branches = false
+    let minimum_stack_depth = 2
 
     let check_stack = (~stack, ~options as _: option<Instruction.run_args>=?, ()) => {
         // there must be 2 elements at el_pos on the stack
-        if(stack->Js.Array2.length < 2){
+        if(stack->Js.Array2.length < minimum_stack_depth){
             (false, Error_msg.stack_not_deep_enough("PAIR", stack->Js.Array2.length))
         } else {
             (true, "")

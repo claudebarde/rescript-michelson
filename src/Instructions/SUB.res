@@ -11,27 +11,18 @@ module SUB: InstructionType = {
     let has_parameters = false
     let parameters = 0
     let has_branches = false
+    let minimum_stack_depth = 2
 
     let check_stack = (
             ~stack, 
-            ~options: option<Instruction.run_args>=?, 
+            ~options as _: option<Instruction.run_args>=?, 
             ()
         ): (bool, string) => {
             // checks if the stack is deep enough (must be at least 2 elements to add)
-            if Js.Array.length(stack) < 2 {
+            if Js.Array.length(stack) < minimum_stack_depth {
                 (false, Error_msg.stack_not_deep_enough("SUB", Js.Array.length(stack)))
             } else {
-                let el_pos = switch options {
-                    | None => 0
-                    | Some(pos) => pos.el_pos
-                }
-                // checks if the 2 elements are numeric values
-                let first_el = stack[el_pos]
-                let second_el = stack[el_pos +1 ]
-                switch (first_el.el_type, second_el.el_type) {
-                    | (Int | Nat | Mutez | Timestamp, Int | Nat | Mutez | Timestamp) => (true, "")
-                    | _ => (false, Error_msg.non_numeric_type("SUB", `(${m_type_to_string(first_el.el_type)} | ${m_type_to_string(second_el.el_type)})`))
-                }                
+                (true, "")               
             }
         }
 
@@ -48,7 +39,12 @@ module SUB: InstructionType = {
                         ) => Ok(Int(val1 - val2))
                     | (Mutez(val1), Mutez(val2)) => Ok(Mutez(val1 - val2))
                     | (Timestamp(val1), Int(val2)) => Ok(Timestamp(val1 - val2))
-                    | _ => Error("Invalid data type for SUB instruction")
+                    | _ => Error(
+                                    Error_msg.wrong_type(
+                                        ~instr="SUB", 
+                                        ~expected="two numeric types", 
+                                        ~received={`${m_type_to_string(first_el.el_type)} and ${m_type_to_string(second_el.el_type)}`})
+                                )
                 }
             switch sub_result {
                 | Ok(res) => {

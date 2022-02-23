@@ -10,6 +10,7 @@ module NIL: InstructionWithOneParam = {
     let has_parameters = true
     let parameters = 1
     let has_branches = false
+    let minimum_stack_depth = 0
 
     let check_stack = (~stack as _, ~options as _: option<Instruction.run_args>=?, ()) => {
         // nothing to check

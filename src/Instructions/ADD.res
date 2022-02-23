@@ -11,6 +11,7 @@ module ADD: InstructionType = {
     let has_parameters = false
     let parameters = 0
     let has_branches = false
+    let minimum_stack_depth = 2
 
     let check_stack = (
             ~stack, 
@@ -18,7 +19,7 @@ module ADD: InstructionType = {
             ()
         ): (bool, string) => {
             // checks if the stack is deep enough (must be at least 2 elements to add)
-            if Js.Array.length(stack) < 2 {
+            if Js.Array.length(stack) < minimum_stack_depth {
                 (false, Error_msg.stack_not_deep_enough("ADD", Js.Array.length(stack)))
             } else {
                 let el_pos = switch options {

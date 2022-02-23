@@ -15,6 +15,7 @@
   "author": "Claude Barde",
   "license": "MIT",
   "dependencies": {
+    "@taquito/michel-codec": "^11.2.0",
     "bs-platform": "^9.0.2",
     "rescript": "^9.1.4"
   },

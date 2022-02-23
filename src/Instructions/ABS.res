@@ -8,6 +8,7 @@ open Stack
 */
 
 module ABS: InstructionType = {
+    let minimum_stack_depth = 1
     let has_parameters = false
     let parameters = 0
     let has_branches = false
@@ -19,23 +20,10 @@ module ABS: InstructionType = {
         }
         // stack must have at least 1 element
         // or be deep enough for the provided el_pos
-        if Js.Array.length(stack) < 1 || Js.Array.length(stack) < el_pos + 1 {
+        if Js.Array.length(stack) < minimum_stack_depth || Js.Array.length(stack) < el_pos + minimum_stack_depth {
             (false, Error_msg.stack_not_deep_enough("ABS", Js.Array.length(stack)))
         } else {
-            (true, "")
-            // element must be of type int
-            /*switch stack[el_pos].el_type {
-                | Int => (true, "")
-                | _ => 
-                    (
-                        false, 
-                        Error_msg.wrong_type(
-                            ~instr="ABS", 
-                            ~expected="int", 
-                            ~received=m_type_to_string(stack[el_pos].el_type)
-                        )
-                    )
-            }*/        
+            (true, "")  
         }
     }
 

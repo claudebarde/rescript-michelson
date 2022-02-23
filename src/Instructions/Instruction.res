@@ -12,6 +12,7 @@ module type InstructionType = {
     let has_parameters: bool
     let parameters: int
     let has_branches: bool
+    let minimum_stack_depth: int
 
     // checks if the stack has the right properties to run the instruction
     let check_stack: (~stack: stack, ~options: run_args=?, unit) => (bool, string)
@@ -44,7 +45,11 @@ module type InstructionWithTwoParams = {
 type instruction =
     | ABS
     | ADD
+    | CAR
+    | CDR
+    | DIP
     | DROP
+    | DUP
     | NIL
     | PAIR
     | PUSH
@@ -56,7 +61,11 @@ let string_to_variant: (string) => result<instruction, string> =
         switch instr {
             | "ABS" => Ok(ABS)
             | "ADD" => Ok(ADD)
+            | "CAR" => Ok(CAR)
+            | "CDR" => Ok(CDR)
+            | "DIP" => Ok(DIP)
             | "DROP" => Ok(DROP)
+            | "DUP" => Ok(DUP)
             | "NIL" => Ok(NIL)
             | "PAIR" => Ok(PAIR)
             | "PUSH" => Ok(PUSH)
@@ -70,7 +79,11 @@ let variant_to_string: (instruction) => result<string, string> =
         switch instruction {
             | ABS => Ok("ABS")
             | ADD => Ok("ADD")
+            | CAR => Ok("CAR")
+            | CDR => Ok("CDR")
+            | DIP => Ok("DIP")
             | DROP => Ok("DROP")
+            | DUP => Ok("DUP")
             | NIL => Ok("NIL")
             | PAIR => Ok("PAIR")
             | PUSH => Ok("PUSH")
