@@ -1,7 +1,5 @@
 open Instruction
 open ErrorMsg
-open Stack
-open MTypes
 
 /*
     https://tezos.gitlab.io/michelson-reference/#instr-SWAP

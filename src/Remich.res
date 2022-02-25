@@ -227,6 +227,22 @@ module Remich = {
                                                             | Error(err) => Error(err)
                                                         }
                                                     }
+                                                    | EDIV => {
+                                                        open EDIV
+                                                        // runs the instruction
+                                                        switch EDIV.run(~stack=stack, ~args={ el_pos: 0 }) {
+                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
+                                                    | MUL => {
+                                                        open MUL
+                                                        // runs the instruction
+                                                        switch MUL.run(~stack=stack, ~args={ el_pos: 0 }) {
+                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
                                                     | NIL => {
                                                         open NIL
                                                         switch find_type_arg(instr_obj, "NIL") {

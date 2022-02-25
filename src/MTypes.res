@@ -473,6 +473,7 @@ let rec parse_json_to_value = (json_obj: Js.Json.t, value_type: m_type): result<
         | JSONArray(arr) => {
             // the value is an array
             // parses the array
+            // TODO
             Error("test")
         }
         | _ => Error("Unexpected value in JSON, expected an array or an object")
