@@ -1,4 +1,5 @@
 open Remich
+open MTypes
 
 /*let michelson_contract = "UNPAIR ;
     IF_LEFT { IF_LEFT { SWAP ; SUB } { ADD } } { DROP 2 ; PUSH int 0 } ;
@@ -195,3 +196,61 @@ switch Remich.init_stack((michelson_test.parameter, michelson_test.initial_stora
         Js.log(err)
     }
 }
+
+// tests MTypes.parse_json_to_type
+/*type code_to_test = { micheline: string, expected_output: m_type, should_work: bool }
+let test_code = (code_to_test: code_to_test) => {
+    let michelson_json = 
+        TaquitoMichelCodec.michel_codec_parser()->TaquitoMichelCodec.parse_micheline_expression(code_to_test.micheline)
+    // verifies the JSON returned by michel-codec
+    let michelson_json = try Js.Json.parseExn(michelson_json->Js.Json.stringify) catch {
+    | _ => failwith("Error parsing Michelson JSON returned by @taquito/michel-codec")
+    }
+    switch parse_json_to_type(michelson_json) {
+        | Ok(res) =>
+            /*if res == code_to_test.expected_output {
+                Js.log3(code_to_test.should_work ? "+" : "-", `Test for ${code_to_test.micheline}`, ": Success!")
+            } else {
+                Js.log3(code_to_test.should_work ? "-" : "+", `Test for ${code_to_test.micheline}`, ": Failed!")
+            }*/
+            if res == code_to_test.expected_output && (code_to_test.should_work || !code_to_test.should_work) {
+                Js.log3(code_to_test.should_work ? "+" : "-", `Test for ${code_to_test.micheline}`, ": Success!")
+            } else {
+                Js.log2(`Test for ${code_to_test.micheline}`, ": Failed!")
+                Js.log(`(output: ${m_type_to_string(res)} / expected: ${m_type_to_string(code_to_test.expected_output)})`)
+            }
+        | Error(err) => 
+            Js.log2(`Test for ${code_to_test.micheline}`, ": Failed!")
+            Js.log(err)
+    }
+}
+
+Js.log("\n")
+let code_to_test = { micheline: "nat 5", expected_output: Nat, should_work: true }
+test_code(code_to_test)
+let code_to_test = { micheline: `string "Tezos"`, expected_output: String, should_work: true }
+test_code(code_to_test)
+let code_to_test = { micheline: `(pair string nat)`, expected_output: Pair((String, Nat)), should_work: true }
+test_code(code_to_test)
+let code_to_test = { micheline: `(or nat string)`, expected_output: Or((Nat, String)), should_work: true }
+test_code(code_to_test)
+let code_to_test = { micheline: `(list nat)`, expected_output: List(Nat), should_work: true }
+test_code(code_to_test)
+// more complex
+let code_to_test = { 
+    micheline: `(pair (pair string string) (pair int nat))`, 
+    expected_output: Pair((Pair(String, String), Pair(Int, Nat))), 
+    should_work: true }
+test_code(code_to_test)
+let code_to_test = { 
+    micheline: `(list (pair (pair string string) (pair int nat)))`, 
+    expected_output: List(Pair((Pair(String, String), Pair(Int, Nat)))), 
+    should_work: true }
+test_code(code_to_test)
+let code_to_test = { 
+    micheline: `(list (list (pair (pair string string) (pair int nat))))`, 
+    expected_output: List(List(Pair((Pair(String, String), Pair(Int, Nat))))), 
+    should_work: true
+ }
+test_code(code_to_test)
+*/

@@ -328,6 +328,157 @@ let rec parse_json_to_type = (json_obj: Js.Json.t): result<m_type, string> => {
     }
 }
 
+let rec parse_json_to_value = (json_obj: Js.Json.t, value_type: m_type): result<m_value, string> => {
+    switch json_obj->Js.Json.classify {
+        | JSONObject(obj) => {
+            // the value is an object
+            // parses the value according to its type
+            switch value_type {
+                | Address | Bytes | Chain_id | Key | Key_hash | Operation | Never | Signature | String | Unit => {
+                    switch obj->Js.Dict.get("string") {
+                        | None => Error(`The provided value was expected to have a "string" property`)
+                        | Some(val) => {
+                            switch val->Js.Json.decodeString {
+                                | None => Error(`The provided value under the "string" property must be a string`)
+                                | Some(val) => {
+                                    switch value_type {
+                                        | Address => Ok(Address(val))
+                                        | Bytes => Ok(Bytes(val))
+                                        | Chain_id => Ok(Chain_id(val))
+                                        | Key => Ok(Key(val))
+                                        | Key_hash => Ok(Key_hash(val))
+                                        | Never => 
+                                            if val === "Never" {
+                                                Ok(Never)
+                                            } else {
+                                                Error(`Unexpected value for "never" type`)
+                                            }
+                                        | Operation => Ok(Operation(val))
+                                        | Signature => Ok(Signature(val))
+                                        | String => Ok(String(val))
+                                        | Unit => 
+                                            if val === "Unit" {
+                                                Ok(Unit)
+                                            } else {
+                                                Error(`Unexpected value for "unit" type`)
+                                            }
+                                        | _ => Error("Error while parsing JSON value")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                | Bool => {
+                    switch obj->Js.Dict.get("prim") {
+                        | None => Error(`The provided value was expected to have a "prim" property`)
+                        | Some(val) =>
+                            switch val->Js.Json.decodeString {
+                                | None => Error(`The provided value under the "prim" property must be a string`)
+                                | Some(val) =>
+                                    if val === "True" {
+                                        Ok(Bool(true))
+                                    } else if val === "False" {
+                                        Ok(Bool(false))
+                                    } else {
+                                        Error(`Unexpected value for boolean type, must be "True" or "False"`)
+                                    }
+                            }
+                    }
+                }
+                | Int | Mutez | Nat | Timestamp => {
+                    switch obj->Js.Dict.get("int") {
+                        | None => Error(`The provided value was expected to have a "int" property`)
+                        | Some(val) => 
+                            switch val->Js.Json.decodeString {
+                                | None => Error(`The provided value under the "int" property must be a string`)
+                                | Some(val) => {
+                                    switch val->Belt.Int.fromString {
+                                        | None => Error(`A numeric value was expected for the "int" property`)
+                                        | Some(num) =>
+                                            switch value_type {
+                                                | Int => Ok(Int(num))
+                                                | Mutez => {
+                                                    if MTypes_verify.valid_mutez(num) {
+                                                        Ok(Mutez(num))
+                                                    } else {
+                                                        Error(`Invalid value provided for mutez type in JSON object`)
+                                                    }
+                                                }
+                                                | Nat => {
+                                                    if MTypes_verify.valid_nat(num) {
+                                                        Ok(Nat(num))
+                                                    } else {
+                                                        Error(`Invalid value provided for nat type in JSON object`)
+                                                    }
+                                                }
+                                                | Timestamp => Ok(Timestamp(num))
+                                                | _ => Error("Error while parsing JSON value")
+                                            }
+                                    }
+                                }
+                            }
+                    }
+                }
+                | Pair((left_type, right_type)) => {
+                    // must have a "prim" property equal to "Pair"
+                    switch obj->Js.Dict.get("prim") {
+                        | None => Error(`The provided value for pair was expected to have a "prim" property`)
+                        | Some(val) =>
+                            // val must be "Pair"
+                            switch val->Js.Json.decodeString {
+                                | None => Error(`Value of "prim" property must be a string`)
+                                | Some(val) =>
+                                    if val !== "Pair" {
+                                        Error(`Value of "prim" property must be equal to "Pair"`)
+                                    } else {
+                                        // finds args property
+                                        switch obj->Js.Dict.get("args") {
+                                            | None => Error(`The provided value for pair was expected to have an "args" property`)
+                                            | Some(args) =>
+                                                // args must be an array
+                                                switch args->Js.Json.decodeArray {
+                                                    | None => Error("The provided arguments for a pair value must be in an array")
+                                                    | Some(arr_args) => {
+                                                        // the array must be of length 2
+                                                        if arr_args->Js.Array2.length !== 2 {
+                                                            Error(`There must be only 2 arguments for a value of type "pair"`)
+                                                        } else {
+                                                            // TODO: checks that the values match the type
+                                                            switch (
+                                                                parse_json_to_value(arr_args[0], left_type), 
+                                                                parse_json_to_value(arr_args[1], right_type)
+                                                            ) {
+                                                                | (Ok(left_value), Ok(right_value)) => {
+                                                                    Ok(Pair({ 
+                                                                                value: (left_value, right_value), 
+                                                                                el_type: (left_type, right_type)
+                                                                            }))
+                                                                }
+                                                                | (Error(err), Ok(_)) => Error(err)
+                                                                | (Ok(_), Error(err)) => Error(err)
+                                                                | (Error(err1), Error(err2)) => Error(j`$err1 & $err2`)
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                        }
+                                    }
+                            }
+                    }
+                }
+                | _ => Error("Unexpected value type for the shape of the value")
+            }
+        }
+        | JSONArray(arr) => {
+            // the value is an array
+            // parses the array
+            Error("test")
+        }
+        | _ => Error("Unexpected value in JSON, expected an array or an object")
+    }    
+}
+
 module MPair = {
     // useful methods for pairs
     

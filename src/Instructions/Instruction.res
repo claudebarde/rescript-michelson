@@ -36,6 +36,8 @@ module type InstructionWithOneParam = {
 module type InstructionWithTwoParams = {
     include InstructionType
 
+    // overrides 'run' function to pass the parameters of the instruction
+    let run: (~stack: stack, ~args: run_args, ~params: array<Js.Json.t>) => result<stack, string>
     // returns has_parameters and number of parameters
     let has_params: () => (bool, int)
     // gets instruction parameters

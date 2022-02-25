@@ -8,7 +8,7 @@
     "start": "rescript build -w",
     "dev": "rescript && node lib/es6/src/Index.mjs",
     "watch": "nodemon --watch src --ext res --exec \"rescript && node lib/es6/src/Index.mjs\"",
-    "test": "retest tests/*.mjs"
+    "test": "rescript && retest lib/es6/tests/*.mjs"
   },
   "keywords": [
     "rescript"

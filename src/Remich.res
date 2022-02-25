@@ -253,10 +253,21 @@ module Remich = {
                                                     | PUSH => {
                                                         open PUSH
                                                         // finds the parameters
-                                                        // runs the instruction
-                                                        switch PUSH.run(~stack=stack, ~args={ el_pos: 0 }) {
-                                                            | Ok(new_stack) => Ok((new_stack, 0))
-                                                            | Error(err) => Error(err)
+                                                        switch instr_obj->Js.Dict.get("args") {
+                                                            | None => Error(`PUSH instruction should have an "args" property`)
+                                                            | Some(args) => {
+                                                                // "args" is an array
+                                                                switch args->Js.Json.decodeArray {
+                                                                    | None => Error(`Expected the value of "args" to be an array`)
+                                                                    | Some(arr_args) => {                                                                        
+                                                                        // runs the instruction
+                                                                        switch PUSH.run(~stack=stack, ~args={ el_pos: 0 }, ~params=arr_args) {
+                                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                                            | Error(err) => Error(err)
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                     | SUB => {

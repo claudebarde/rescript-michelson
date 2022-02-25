@@ -6,7 +6,7 @@ type michelson_test = {
     initial_storage: MTypes.m_value,
     parameter: MTypes.m_value,
     storage_type: MTypes.m_type,
-    expected_new_storage: MTypes.m_value
+    expected_output: MTypes.m_value
 }
 
 let run_michelson = (
@@ -36,18 +36,18 @@ let assertExpectedStorage = (
     assertion(
         ~message,
         ~operator="ADD instruction failed",
-        (a, b) => a === b,
+        (a, b) => a == b,
         new_storage,
         expected_storage
     )
 
 test("ADD instruction", () => {
     let test_contract = {
-        contract: "UNPAIR ; ADD ; NIL operation ; PAIR",
+        contract: "UNPAIR ; ADD",
         initial_storage: Int(5),
         parameter: Int(3),
         storage_type: Int,
-        expected_new_storage: Int(8)
+        expected_output: Int(8)
     }
 
     let run_output = run_michelson(
@@ -61,9 +61,9 @@ test("ADD instruction", () => {
             switch output.result {
             | Ok((rescript_res, _)) => {
                 assertExpectedStorage(
-                    ~message="Test ADD instruction with valid contract", 
+                    ~message="Test ADD instruction", 
                     ~new_storage=rescript_res,
-                    ~expected_storage=test_contract.expected_new_storage
+                    ~expected_storage=test_contract.expected_output
                 )
             }
             | Error(err) => fail(~message=err, ())
