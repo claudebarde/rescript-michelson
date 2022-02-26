@@ -342,19 +342,45 @@ let rec parse_json_to_value = (json_obj: Js.Json.t, value_type: m_type): result<
                                 | None => Error(`The provided value under the "string" property must be a string`)
                                 | Some(val) => {
                                     switch value_type {
-                                        | Address => Ok(Address(val))
+                                        | Address => {
+                                            if TaquitoHelpers.validate_address(val) === 3 {
+                                                Ok(Address(val))
+                                            } else {
+                                                Error("Invalid value provided for Tezos address")
+                                            }
+                                        }
                                         | Bytes => Ok(Bytes(val))
-                                        | Chain_id => Ok(Chain_id(val))
+                                        | Chain_id => 
+                                            if TaquitoHelpers.validate_chain(val) === 3 {
+                                                Ok(Chain_id(val))
+                                            } else {
+                                                Error("Invalid value provided for Tezos chain id")
+                                            }                                        
                                         | Key => Ok(Key(val))
-                                        | Key_hash => Ok(Key_hash(val))
+                                        | Key_hash => 
+                                            if TaquitoHelpers.validate_key_hash(val) === 3 {
+                                                Ok(Key_hash(val))
+                                            } else {
+                                                Error("Invalid value provided for Tezos key hash")
+                                            }                                        
                                         | Never => 
                                             if val === "Never" {
                                                 Ok(Never)
                                             } else {
                                                 Error(`Unexpected value for "never" type`)
                                             }
-                                        | Operation => Ok(Operation(val))
-                                        | Signature => Ok(Signature(val))
+                                        | Operation => 
+                                            if TaquitoHelpers.validate_operation(val) === 3 {
+                                                Ok(Operation(val))
+                                            } else {
+                                                Error("Invalid value provided for Tezos operation")
+                                            }
+                                        | Signature =>
+                                            if TaquitoHelpers.validate_signature(val) === 3 {
+                                                Ok(Signature(val))
+                                            } else {
+                                                Error("Invalid value provided for Tezos signature")
+                                            }                                         
                                         | String => Ok(String(val))
                                         | Unit => 
                                             if val === "Unit" {

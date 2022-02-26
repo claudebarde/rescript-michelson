@@ -165,9 +165,12 @@ let michelson_test = {
 switch Remich.init_stack((michelson_test.parameter, michelson_test.initial_storage)) {
     | Ok(initial_stack) => {
         // runs the Michelson code
-        let run_output = Remich.run_code_from_json(~code=michelson_test.contract, ~stack=initial_stack, ~storage_type=michelson_test.storage_type)
-        switch run_output.result {
-            | Ok((rescript_res, js_res)) => {
+        let run_output = Remich.run_code_from_json(
+            ~code=michelson_test.contract, 
+            ~stack=initial_stack
+        )->Remich.verify_output_stack(michelson_test.storage_type)
+        switch run_output {
+            | Ok({ result: (rescript_res, js_res), stack_snapshots }) => {
                 Js.log("\nMichelson code successfully processed!")
                 switch rescript_res {
                     | Pair({ value: (_, right) }) => {
@@ -186,7 +189,7 @@ switch Remich.init_stack((michelson_test.parameter, michelson_test.initial_stora
                         | None => "Couldn't format value into JSON"
                     }
                 )
-                Js.log2("Stack snapshots:", run_output.stack_snapshots)
+                Js.log2("Stack snapshots:", stack_snapshots)
             }
             | Error(err) => Js.log2("\nResult -> Error:", err)
         }

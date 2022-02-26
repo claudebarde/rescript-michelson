@@ -1,6 +1,5 @@
 open InstructionsTest
 open Test
-open Remich
 
 test("SWAP instruction", () => {
     // first test
@@ -12,27 +11,9 @@ test("SWAP instruction", () => {
         expected_output: Int(2)
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test SWAP instruction", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test SWAP instruction")
 
     // second test
     let test_contract = {
@@ -43,27 +24,9 @@ test("SWAP instruction", () => {
         expected_output: String("Hello world")
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test SWAP instruction with string values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test SWAP instruction with string values")
 
     // third test
     let test_contract = {
@@ -74,31 +37,9 @@ test("SWAP instruction", () => {
         expected_output: Unit
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test SWAP instruction with invalid stack", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => {
-                if err === "The provided stack is not deep enough for instruction SWAP, got depth of 1" {
-                    pass(~message="SWAP should fail when there is only 1 element on the stack", ())
-                } else {
-                    fail(~message=err, ())
-                }
-            }
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_fail(
+        ~test_data=test_contract, 
+        ~message="Test SWAP instruction with invalid stack",
+        ~expected_error="The provided stack is not deep enough for instruction SWAP, got depth of 1",
+        ~error_message="SWAP should fail when there is only 1 element on the stack")
 })

@@ -1,6 +1,5 @@
 open InstructionsTest
 open Test
-open Remich
 
 test("EDIV instruction", () => {
     // first test
@@ -16,27 +15,9 @@ test("EDIV instruction", () => {
                 })
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EDIV instruction with int values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test EDIV instruction with int values")
 
     // second test
     let test_contract = {
@@ -51,27 +32,9 @@ test("EDIV instruction", () => {
                 })
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EDIV instruction with int values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test EDIV instruction with int values")
 
     // third test
     let test_contract = {
@@ -86,27 +49,9 @@ test("EDIV instruction", () => {
                 })
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EDIV instruction with division by zero (1)", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test EDIV instruction with division by zero (1)")
 
     // fourth test
     let test_contract = {
@@ -121,27 +66,9 @@ test("EDIV instruction", () => {
                 })
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EDIV instruction with division by zero (2)", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test EDIV instruction with division by zero (2)")
 
     // fifth test
     let test_contract = {
@@ -156,27 +83,9 @@ test("EDIV instruction", () => {
                 })
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EDIV instruction with mutez/nat values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test EDIV instruction with mutez/nat values")
 
     // sixth test
     let test_contract = {
@@ -191,27 +100,9 @@ test("EDIV instruction", () => {
                 })
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EDIV instruction with mutez/mutez values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test EDIV instruction with mutez/mutez values")
 
     // seventh contract
     let test_contract = {
@@ -222,31 +113,9 @@ test("EDIV instruction", () => {
         expected_output: Unit
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EDIV instruction with string values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => {
-                if err === "Expected a numeric type for instruction EDIV, but got (string | string)" {
-                    pass(~message="EDIV should fail when given non numeric values", ())
-                } else {
-                    fail(~message=err, ())
-                }
-            }
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_fail(
+        ~test_data=test_contract, 
+        ~message="Test EDIV instruction with string values",
+        ~expected_error="Expected a numeric type for instruction EDIV, but got (string | string)",
+        ~error_message="EDIV should fail when given non numeric values")
 })

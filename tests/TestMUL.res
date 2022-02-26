@@ -1,6 +1,5 @@
 open InstructionsTest
 open Test
-open Remich
 
 test("MUL instruction", () => {
     // first test
@@ -12,27 +11,9 @@ test("MUL instruction", () => {
         expected_output: Int(15)
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test MUL instruction with int values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test MUL instruction with int values")
 
     // second test
     let test_contract = {
@@ -43,27 +24,9 @@ test("MUL instruction", () => {
         expected_output: Int(27)
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test MUL instruction with int and nat values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test MUL instruction with int and nat values")
 
     // third test
     let test_contract = {
@@ -74,27 +37,9 @@ test("MUL instruction", () => {
         expected_output: Nat(18)
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test MUL instruction with nat values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test MUL instruction with nat values")
 
     // fourth test
     let test_contract = {
@@ -105,27 +50,9 @@ test("MUL instruction", () => {
         expected_output: Mutez(18_000_000)
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test MUL instruction with mutez and nat values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test MUL instruction with mutez and nat values")
 
     // fifth test
     let test_contract = {
@@ -136,33 +63,11 @@ test("MUL instruction", () => {
         expected_output: Unit
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test MUL instruction with string values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => {
-                if err === "Expected a numeric type for instruction MUL, but got (string | string)" {
-                    pass(~message="MUL should fail when given non numeric values", ())
-                } else {
-                    fail(~message=err, ())
-                }
-            }
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_fail(
+        ~test_data=test_contract, 
+        ~message="Test MUL instruction with string values",
+        ~expected_error="Expected a numeric type for instruction MUL, but got (string | string)",
+        ~error_message="MUL should fail when given non numeric values")
 
     // sixth test
     let test_contract = {
@@ -173,31 +78,9 @@ test("MUL instruction", () => {
         expected_output: Unit
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test MUL instruction with mutez values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => {
-                if err === "Cannot use MUL instruction with 2 mutez values" {
-                    pass(~message="MUL should fail when given 2 mutez values", ())
-                } else {
-                    fail(~message=err, ())
-                }
-            }
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_fail(
+        ~test_data=test_contract, 
+        ~message="Test MUL instruction with mutez values",
+        ~expected_error="Cannot use MUL instruction with 2 mutez values",
+        ~error_message="MUL should fail when given 2 mutez values")
 })

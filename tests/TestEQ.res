@@ -1,6 +1,5 @@
 open InstructionsTest
 open Test
-open Remich
 
 test("EQ instruction", () => {
     // first test
@@ -12,27 +11,9 @@ test("EQ instruction", () => {
         expected_output: Bool(false)
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EQ instruction with non zero int", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test EQ instruction with non zero int")
 
     // second test
     let test_contract = {
@@ -43,27 +24,9 @@ test("EQ instruction", () => {
         expected_output: Bool(true)
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EQ instruction with int 0", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test EQ instruction with int 0")
 
     // third test
     let test_contract = {
@@ -74,33 +37,11 @@ test("EQ instruction", () => {
         expected_output: Unit
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EQ instruction with string values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => {
-                if err === "Wrong type for instruction EQ, expected int, got string" {
-                    pass(~message="EQ should fail when given non int values (string)", ())
-                } else {
-                    fail(~message=err, ())
-                }
-            }
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_fail(
+        ~test_data=test_contract, 
+        ~message="Test EQ instruction with string values",
+        ~expected_error="Wrong type for instruction EQ, expected int, got string",
+        ~error_message="EQ should fail when given non int values (string)") 
 
     // fourth test
     let test_contract = {
@@ -111,31 +52,9 @@ test("EQ instruction", () => {
         expected_output: Unit
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test EQ instruction with nat values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => {
-                if err === "Wrong type for instruction EQ, expected int, got nat" {
-                    pass(~message="EQ should fail when given non int values (nat)", ())
-                } else {
-                    fail(~message=err, ())
-                }
-            }
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_fail(
+        ~test_data=test_contract, 
+        ~message="Test EQ instruction with nat values",
+        ~expected_error="Wrong type for instruction EQ, expected int, got nat",
+        ~error_message="EQ should fail when given non int values (nat)") 
 })

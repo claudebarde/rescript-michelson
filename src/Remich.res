@@ -1,7 +1,7 @@
 open MTypes
 open MTypes_js
 open Stack
-open TaquitoMichelCodec
+open TaquitoHelpers
 
 type rec ast_element = {
     instruction: Instruction.instruction,
@@ -12,9 +12,16 @@ type rec ast_element = {
 type ast = array<ast_element>
 
 type run_output = {
-    result: result<(m_value, m_value_js), string>,
+    result: result<stack, string>,
     stack_snapshots: array<stack>,
-    comments: string
+    comments: array<string>
+}
+
+type checked_output = {
+    result: (m_value, m_value_js),
+    stack: stack,
+    stack_snapshots: array<stack>,
+    comments: array<string>
 }
 
 module Remich = {
@@ -374,80 +381,95 @@ module Remich = {
         }                      
     }
 
-    let run_code_from_json = (~code: string, ~stack: stack, ~storage_type: m_type): run_output => {
-        //(result<(m_value, m_value_js), string>, array<stack_snapshots>, string) => {
-            // parses Michelson code to JSON
-            let formatted_code =
-                switch code->Js.String2.trim->Js.String2.match_(%re("/\{(.*)\}/")) {
-                    | None => "{" ++ code ++ "}"
-                    | Some(c) => c[0]
-                }
-            let michelson_json = michel_codec_parser()->parse_micheline_expression(formatted_code)
-            // verifies the JSON returned by michel-codec
-            let michelson_json = try Js.Json.parseExn(michelson_json->Js.Json.stringify) catch {
-            | _ => failwith("Error parsing Michelson JSON returned by @taquito/michel-codec")
+    let run_code_from_json = (~code: string, ~stack: stack): run_output => {
+        // parses Michelson code to JSON
+        let formatted_code =
+            switch code->Js.String2.trim->Js.String2.match_(%re("/\{(.*)\}/")) {
+                | None => "{" ++ code ++ "}"
+                | Some(c) => c[0]
             }
-            // JSON structure must be an array
-            switch michelson_json->Js.Json.classify {
-                | Js.Json.JSONArray(arr_of_instructions) => {
-                    // maps the array of instructions
-                    if arr_of_instructions->Js.Array2.length < 2 {
-                        {
-                            result: Error("Array of instructions seems to be too small (less than 2 instructions)"),
-                            stack_snapshots: [],
-                            comments: ""
-                        }
-                    } else {
-                        switch arr_of_instructions->Js.Array2.reducei(run_instruction_json, Ok((stack, 0))) {
-                            | Ok((stack, _)) => {
-                                let res = stack[0].value
-                                // element on the stack must be a pair
-                                // with a list of operation on the left
-                                // and the new storage on the right
-                                switch res {
-                                    | Pair({ el_type }) => {
-                                        switch el_type {
-                                            | (List(Operation), storage) => 
-                                                    if storage === storage_type {
-                                                        {
-                                                            result: Ok((res, m_value_to_js(res))),
-                                                            stack_snapshots: [],
-                                                            comments: "Expected storage type and new storage type match"
-                                                        }
-                                                    } else {
-                                                        {
-                                                            result: Ok((res, m_value_to_js(res))),
-                                                            stack_snapshots: [],
-                                                            comments: `Storage type in result doesn't match, expected ${storage_type->m_type_to_string, got ${storage->m_type_to_string}`
-                                                        }
-                                                    }
-                                            | _ => {
-                                                        result: Ok((res, m_value_to_js(res))),
-                                                        stack_snapshots: [],
-                                                        comments: "Unexpected final values"
-                                                    }
-                                        }                                        
-                                    }
-                                    | _ => {
-                                                result: Ok((res, m_value_to_js(res))),
-                                                stack_snapshots: [],
-                                                comments: `Final value is not a pair, got ${m_type_to_string(stack[0].el_type)}`
-                                            }
-                                }
-                            }
-                            | Error(err) => {
-                                                result: Error(err),
-                                                stack_snapshots: [],
-                                                comments:""
-                                            }
-                        }                            
-                    }
-                }
-                | _ => {
-                            result: Error("JSON value for instructions tree is not an array"),
-                            stack_snapshots: [],
-                            comments:""
-                        }
-            }
+        let michelson_json = michel_codec_parser()->parse_micheline_expression(formatted_code)
+        // verifies the JSON returned by michel-codec
+        let michelson_json = try Js.Json.parseExn(michelson_json->Js.Json.stringify) catch {
+        | _ => failwith("Error parsing Michelson JSON returned by @taquito/michel-codec")
         }
+        // JSON structure must be an array
+        switch michelson_json->Js.Json.classify {
+            | Js.Json.JSONArray(arr_of_instructions) => {
+                // maps the array of instructions
+                if arr_of_instructions->Js.Array2.length < 2 {
+                    {
+                        result: Error("Array of instructions seems to be too small (less than 2 instructions)"),
+                        stack_snapshots: [],
+                        comments: []
+                    }
+                } else {
+                    switch arr_of_instructions->Js.Array2.reducei(run_instruction_json, Ok((stack, 0))) {
+                        | Ok((stack, _)) => {
+                                                result: Ok(stack),
+                                                stack_snapshots: [],
+                                                comments: []
+                                            }
+                        | Error(err) => {
+                                            result: Error(err),
+                                            stack_snapshots: [],
+                                            comments: []
+                                        }
+                    }                            
+                }
+            }
+            | _ => {
+                        result: Error("JSON value for instructions tree is not an array"),
+                        stack_snapshots: [],
+                        comments: []
+                    }
+        }
+    }
+
+    let verify_output_stack = (output_to_check: run_output, storage_type: m_type): result<checked_output, string> => {
+        let { result, stack_snapshots, comments } = output_to_check
+        switch result {
+            | Ok(stack) => {
+                let res = stack[0].value
+                // element on the stack must be a pair
+                // with a list of operation on the left
+                // and the new storage on the right
+                switch res {
+                    | Pair({ el_type }) => {
+                        switch el_type {
+                            | (List(Operation), storage) => 
+                                    if storage === storage_type {
+                                        {
+                                            result: (res, m_value_to_js(res)),
+                                            stack,
+                                            stack_snapshots,
+                                            comments: ["Expected storage type and new storage type match"]
+                                        }->Ok
+                                    } else {
+                                        {
+                                            result: (res, m_value_to_js(res)),
+                                            stack,
+                                            stack_snapshots,
+                                            comments: [`Storage type in result doesn't match, expected ${storage_type->m_type_to_string, got ${storage->m_type_to_string}`]
+                                        }->Ok
+                                    }
+                            | _ => {
+                                        result: (res, m_value_to_js(res)),
+                                        stack,
+                                        stack_snapshots,
+                                        comments: ["Unexpected final values"]
+                                    }->Ok
+                        }                                        
+                    }
+                    | _ => {
+                                result: (res, m_value_to_js(res)),
+                                stack,
+                                stack_snapshots,
+                                comments: [`Final value is not a pair, got ${m_type_to_string(stack[0].el_type)}`]
+                            }->Ok
+                }
+            }
+            | Error(err) => Error(err)
+        }        
+    }
 }

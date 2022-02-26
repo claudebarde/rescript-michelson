@@ -1,6 +1,5 @@
 open InstructionsTest
 open Test
-open Remich
 
 test("SUB instruction", () => {
     // first test
@@ -12,27 +11,9 @@ test("SUB instruction", () => {
         expected_output: Int(-2)
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test SUB instruction with int values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test SUB instruction with int values")
 
     // second test
     let test_contract = {
@@ -43,27 +24,9 @@ test("SUB instruction", () => {
         expected_output: Int(6)
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test SUB instruction with int and nat values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => fail(~message=err, ())
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_pass(
+        ~test_data=test_contract, 
+        ~message="Test SUB instruction with int and nat values")
 
     // third test
     let test_contract = {
@@ -74,31 +37,9 @@ test("SUB instruction", () => {
         expected_output: Unit
     }
 
-    let run_output = run_michelson(
-        ~contract=test_contract.contract, 
-        ~param=test_contract.parameter, 
-        ~initial_storage=test_contract.initial_storage,
-        ~storage_type=test_contract.storage_type
-    )
-    switch run_output {
-        | Ok(output) => {
-            switch output.result {
-            | Ok((rescript_res, _)) => {
-                assertExpectedOutput(
-                    ~message="Test SUB instruction with string values", 
-                    ~new_storage=rescript_res,
-                    ~expected_output=test_contract.expected_output
-                )
-            }
-            | Error(err) => {
-                if err === "Wrong type for instruction SUB, expected two numeric types, got string and string" {
-                    pass(~message="SUB should fail when given non numeric values", ())
-                } else {
-                    fail(~message=err, ())
-                }
-            }
-        }
-        }
-        | Error(err) => fail(~message=err, ())
-    }
+    let _ = run_test_fail(
+        ~test_data=test_contract, 
+        ~message="Test SUB instruction with string values",
+        ~expected_error="Wrong type for instruction SUB, expected two numeric types, got string and string",
+        ~error_message="SUB should fail when given non numeric values")
 })
