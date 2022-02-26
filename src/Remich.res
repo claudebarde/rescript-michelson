@@ -235,10 +235,58 @@ module Remich = {
                                                             | Error(err) => Error(err)
                                                         }
                                                     }
+                                                    | EQ => {
+                                                        open GenericComp
+                                                        // runs the instruction
+                                                        switch EQ.run(~stack=stack, ~args={ el_pos: 0 }) {
+                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
+                                                    | GE => {
+                                                        open GenericComp
+                                                        // runs the instruction
+                                                        switch GE.run(~stack=stack, ~args={ el_pos: 0 }) {
+                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
+                                                    | GT => {
+                                                        open GenericComp
+                                                        // runs the instruction
+                                                        switch GT.run(~stack=stack, ~args={ el_pos: 0 }) {
+                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
+                                                    | LE => {
+                                                        open GenericComp
+                                                        // runs the instruction
+                                                        switch LE.run(~stack=stack, ~args={ el_pos: 0 }) {
+                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
+                                                    | LT => {
+                                                        open GenericComp
+                                                        // runs the instruction
+                                                        switch LT.run(~stack=stack, ~args={ el_pos: 0 }) {
+                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
                                                     | MUL => {
                                                         open MUL
                                                         // runs the instruction
                                                         switch MUL.run(~stack=stack, ~args={ el_pos: 0 }) {
+                                                            | Ok(new_stack) => Ok((new_stack, 0))
+                                                            | Error(err) => Error(err)
+                                                        }
+                                                    }
+                                                    | NEQ => {
+                                                        open GenericComp
+                                                        // runs the instruction
+                                                        switch NEQ.run(~stack=stack, ~args={ el_pos: 0 }) {
                                                             | Ok(new_stack) => Ok((new_stack, 0))
                                                             | Error(err) => Error(err)
                                                         }

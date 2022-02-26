@@ -23,10 +23,18 @@ node lib/es6/src/Index.bs.js
 
 ## Available instructions
 
-`ABS`, `ADD`, `CAR`, `CDR`, `CONCAT`, `DIP`, `DROP`, `DUP`, `MUL`, `EDIV`, `NIL`, `PAIR`, `PUSH`, `SUB`, `SWAP`, `UNPAIR`
+`ABS`, `ADD`, `CAR`, `CDR`, `CONCAT`, `DIP`, `DROP`, `DUP`, `EQ`, `GE`, `GT`, `LE`, `LT`, `MUL`, `EDIV`, `NEQ`, `NIL`, `PAIR`, `PUSH`, `SUB`, `SWAP`, `UNPAIR`
 
 ## Type system
 
 Michelson types are represented by the recursive `m_type` variant, for example, a Michelson `int` is `m_type.Int` and a Michelson `list` is `m_type.List(m_type)`.
 
 Values are represented by the recursive `m_value` variant which includes the name of the type and the associated value, for example, a Michelson value `5` of type `int` is `m_value.Int(5: m_int)` and a Michelson value `list{5, 6, 7}` is `m_value.List(list{5, 6, 7}: m_list<m_int>)`.
+
+## Tests
+
+```sh
+npm run test
+```
+
+Every instruction has its own test file where different situations and stack configurations are tested.

@@ -54,7 +54,13 @@ type instruction =
     | DROP
     | DUP
     | EDIV
+    | EQ
+    | GE
+    | GT
+    | LE
+    | LT
     | MUL
+    | NEQ
     | NIL
     | PAIR
     | PUSH
@@ -74,7 +80,13 @@ let string_to_variant: (string) => result<instruction, string> =
             | "DROP" => Ok(DROP)
             | "DUP" => Ok(DUP)
             | "EDIV" => Ok(EDIV)
+            | "EQ" => Ok(EQ)
+            | "GE" => Ok(GE)
+            | "GT" => Ok(GT)
+            | "LE" => Ok(LE)
+            | "LT" => Ok(LT)
             | "MUL" => Ok(MUL)
+            | "NEQ" => Ok(NEQ)
             | "NIL" => Ok(NIL)
             | "PAIR" => Ok(PAIR)
             | "PUSH" => Ok(PUSH)
@@ -96,7 +108,13 @@ let variant_to_string: (instruction) => result<string, string> =
             | DROP => Ok("DROP")
             | DUP => Ok("DUP")
             | EDIV => Ok("EDIV")
+            | EQ => Ok("EQ")
+            | GE => Ok("GE")
+            | GT => Ok("GT")
+            | LE => Ok("LE")
+            | LT => Ok("LT")
             | MUL => Ok("MUL")
+            | NEQ => Ok("NEQ")
             | NIL => Ok("NIL")
             | PAIR => Ok("PAIR")
             | PUSH => Ok("PUSH")
